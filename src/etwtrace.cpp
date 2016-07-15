@@ -1,4 +1,7 @@
-#include "stdafx.h"
+#pragma once
+#include <SDKDDKVer.h>
+#include <stdio.h>
+#include <tchar.h>
 #include "etwtrace.h"
 
 ITraceConsumer* pConsumer = NULL;

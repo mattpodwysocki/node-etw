@@ -52,8 +52,8 @@
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <CompileAsWinRT>false</CompileAsWinRT>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <DisableSpecificWarnings>4530;4506;4351;4355;4800;4251;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-      <ExceptionHandling>Async</ExceptionHandling>
+      <DisableSpecificWarnings>4351;4355;4800;4251;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ExceptionHandling>false</ExceptionHandling>
       <MinimalRebuild>false</MinimalRebuild>
       <OmitFramePointers>false</OmitFramePointers>
       <Optimization>Disabled</Optimization>
@@ -92,8 +92,8 @@
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <CompileAsWinRT>false</CompileAsWinRT>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <DisableSpecificWarnings>4530;4506;4351;4355;4800;4251;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-      <ExceptionHandling>Async</ExceptionHandling>
+      <DisableSpecificWarnings>4351;4355;4800;4251;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ExceptionHandling>false</ExceptionHandling>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>

@@ -1,5 +1,5 @@
 {
-  "name": "node-etw",
+  "name": "node-etw-tracing",
   "version": "1.0.0",
   "description": "Node Native module for low level ETW Tracing",
   "main": "index.js",
@@ -45,8 +45,8 @@
     "tape": "^4.6.0"
   },
   "dependencies": {
-    "bindings": "1.2.1",
+    "bindings": "^1.2.1",
     "nan": "^2.4.0",
-    "node-pre-gyp": "^0.6.26"
+    "node-pre-gyp": "^0.6.29"
   }
 }

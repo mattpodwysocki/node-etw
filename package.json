@@ -1,0 +1,52 @@
+{
+  "name": "node-etw",
+  "version": "1.0.0",
+  "description": "Node Native module for low level ETW Tracing",
+  "main": "index.js",
+  "binary": {
+    "module_name": "etwtrace",
+    "module_path": "build/{configuration}/",
+    "host": "https://github.com/mattpodwysocki/node-etw/releases/download/1.0.0"
+  },
+  "scripts": {
+    "install": "node-pre-gyp install --fallback-to-build",
+    "rebuild-all": "npm rebuild && node-gyp rebuild",
+    "gyp-rebuild": "node-gyp rebuild",
+    "test": "tape test/**/*.js | tap-spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mattpodwysocki/node-etw.git"
+  },
+  "keywords": [
+    "ETW",
+    "Windows",
+    "Tracing",
+    "Trace"
+  ],
+  "author": "Matthew Podwysocki",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mattpodwysocki/node-etw/issues"
+  },
+  "homepage": "https://github.com/mattpodwysocki/node-etw#readme",
+  "engines": {
+    "node": ">=4"
+  },
+  "engineStrict": true,
+  "os": [
+    "win32"
+  ],
+  "bundledDependencies": [
+    "node-pre-gyp"
+  ],
+  "devDependencies": {
+    "tap-spec": "^4.1.1",
+    "tape": "^4.6.0"
+  },
+  "dependencies": {
+    "bindings": "1.2.1",
+    "nan": "^2.4.0",
+    "node-pre-gyp": "^0.6.26"
+  }
+}

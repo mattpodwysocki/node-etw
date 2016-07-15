@@ -1,7 +1,7 @@
-#pragma once
-#include <SDKDDKVer.h>
 #include <stdio.h>
 #include <tchar.h>
+#include <SDKDDKVer.h>
+
 #include "etwtrace.h"
 
 ITraceConsumer* pConsumer = NULL;

@@ -5,7 +5,7 @@ ITraceConsumer* pConsumer = NULL;
 
 TraceSession::TraceSession(LPCTSTR szSessionName) : _szSessionName(_tcsdup(szSessionName))
 {
-    pConsumer = new NodeTraceConsumer();
+    
 }
 
 TraceSession::~TraceSession(void)

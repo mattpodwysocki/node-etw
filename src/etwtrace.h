@@ -2,10 +2,15 @@
 #ifndef _etwtrace_h_
 #define  _etwtrace_h_
 
+
+#include <nan.h>
+#include <tchar.h>
+#include <stdio.h>
 #include <Windows.h>
+#include <SDKDDKVer.h>
 #include <Evntcons.h>
 #include <Evntrace.h>
-#include <nan.h>
+
 
 struct ITraceConsumer {
     virtual void OnEventRecord(PEVENT_RECORD eventPointer) = 0;

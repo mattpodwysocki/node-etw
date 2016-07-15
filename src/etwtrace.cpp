@@ -1,7 +1,3 @@
-#include <stdio.h>
-#include <tchar.h>
-#include <SDKDDKVer.h>
-
 #include "etwtrace.h"
 
 ITraceConsumer* pConsumer = NULL;
@@ -125,11 +121,3 @@ struct NodeTraceConsumer : ITraceConsumer
         }
     };
 };
-
-extern "C" {
-  void init(v8::Handle<v8::Object> target) {
-
-  }
-}
-
-NODE_MODULE(etwtrace, init);

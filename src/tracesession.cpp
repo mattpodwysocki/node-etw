@@ -1,4 +1,4 @@
-#include "TraceSession.hpp"
+#include "traceSession.h"
 
 static VOID WINAPI EventRecordCallback(_In_ PEVENT_RECORD pEventRecord)
 {
@@ -33,7 +33,6 @@ bool TraceSession::Start()
 {
     if (!_pSessionProperties)
     {
-        static_assert(sizeof(EVENT_TRACE_PROPERTIES) == 120, "");
         size_t sessionNameBytes = (wcslen(_szSessionName) + 1) * sizeof(wchar_t);
         size_t fileNameBytes = _szFileName ? (wcslen(_szFileName) + 1) * sizeof(wchar_t) : 0;
         size_t buffSize = sizeof(EVENT_TRACE_PROPERTIES) + sessionNameBytes + fileNameBytes;

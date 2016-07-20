@@ -1,7 +1,6 @@
 #ifndef _tracession_h_
 #define  _tracesesion_h_
 
-#include <nan.h>
 #include <windows.h>
 #include <evntprov.h>
 #include <evntrace.h> 

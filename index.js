@@ -1,5 +1,7 @@
 'use strict';
 
+const etwtrace = require('./build/Release/etwtrace.node');
+
 const LOG_LEVELS = {
   CRITICAL: 1,
   ERROR: 2,
@@ -9,8 +11,8 @@ const LOG_LEVELS = {
 };
 
 class ETW {
-  constructor(sessionName) {
-    this.sessionName = sessionName;
+  constructor(sessionName, fileName) {
+    this.etw = new etwtrace.ETW(sessionName, fileName);
   }
 
   start() {

@@ -6,19 +6,15 @@
 #include <evntrace.h> 
 #include <evntcons.h> 
 #include <stdint.h>
+#include "traceconsumer.h"
 
 #undef OpenTrace
-
-struct ITraceConsumer {
-    virtual void OnEventRecord(_In_ PEVENT_RECORD pEventRecord) = 0;
-    virtual bool ContinueProcessing() = 0;
-};
 
 class TraceSession
 {
 
 public:
-    TraceSession(const wchar_t* szSessionName, const wchar_t* szFileName);
+    TraceSession(const wchar_t* szSessionName);
     ~TraceSession();
 
 public:

@@ -10,9 +10,8 @@ static ULONG WINAPI BufferRecordCallback(_In_ PEVENT_TRACE_LOGFILE Buffer)
     return reinterpret_cast<ITraceConsumer *>(Buffer->Context)->ContinueProcessing();
 }
 
-TraceSession::TraceSession(const wchar_t* szSessionName, const wchar_t* szFileName)
+TraceSession::TraceSession(const wchar_t* szSessionName)
     : _szSessionName(_wcsdup(szSessionName))
-    , _szFileName(_wcsdup(szFileName))
     , _status(0)
     , _pSessionProperties(0)
     , _hSession(0)
@@ -34,7 +33,7 @@ bool TraceSession::Start()
     if (!_pSessionProperties)
     {
         size_t sessionNameBytes = (wcslen(_szSessionName) + 1) * sizeof(wchar_t);
-        size_t fileNameBytes = _szFileName ? (wcslen(_szFileName) + 1) * sizeof(wchar_t) : 0;
+        size_t fileNameBytes = 0;
         size_t buffSize = sizeof(EVENT_TRACE_PROPERTIES) + sessionNameBytes + fileNameBytes;
         _pSessionProperties = reinterpret_cast<EVENT_TRACE_PROPERTIES *>(malloc(buffSize));
         ZeroMemory(_pSessionProperties, buffSize);
@@ -44,13 +43,6 @@ bool TraceSession::Start()
         _pSessionProperties->LoggerNameOffset = sizeof(EVENT_TRACE_PROPERTIES);
         _pSessionProperties->BufferSize = 0;
         _pSessionProperties->MaximumBuffers = 200;
-
-        if (_szFileName)
-        {
-            _pSessionProperties->LogFileNameOffset = ULONG(_pSessionProperties->LoggerNameOffset + sessionNameBytes);
-            wchar_t* dest = reinterpret_cast<wchar_t*>(reinterpret_cast<char*>(_pSessionProperties) + _pSessionProperties->LogFileNameOffset);
-            wcscpy_s(dest, fileNameBytes/sizeof(wchar_t), _szFileName);
-        }
     }
 
     // Create the trace session.

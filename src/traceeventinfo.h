@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _traceeventinfo_h_
+#define  _traceventinfo_h_
 
 #include <windows.h>
 #include <exception>
@@ -81,3 +82,5 @@ private:
     TRACE_EVENT_INFO* pInfo;
     EVENT_RECORD* pEvent;
 };
+
+#endif

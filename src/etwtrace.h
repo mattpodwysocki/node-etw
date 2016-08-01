@@ -16,10 +16,18 @@ class ETW : public node::ObjectWrap
     static void Init(Local<Object> exports);
 
   private:
-    explicit ETW(const wchar_t* szSession, const wchar_t* szFileName);
+    explicit ETW(const wchar_t* szSession);
     ~ETW();
 
     static void New(const FunctionCallbackInfo<Value>& args);
+    static void Start(const FunctionCallbackInfo<Value>& args);
+    static void Stop(const FunctionCallbackInfo<Value>& args);
+    static void OpenTrace(const FunctionCallbackInfo<Value>& args);
+    static void CloseTrace(const FunctionCallbackInfo<Value>& args);
+    static void EnableProvider(const FunctionCallbackInfo<Value>& args);
+    static void DisableProvider(const FunctionCallbackInfo<Value>& args);
+    static void Process(const FunctionCallbackInfo<Value>& args);
+    static void Status(const FunctionCallbackInfo<Value>& args); 
   
     static v8::Persistent<Function> constructor;
     TraceSession* pTraceSession;

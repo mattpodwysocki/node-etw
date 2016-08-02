@@ -26,22 +26,18 @@ void NodeTraceConsumer::OnEventRecord(_In_ PEVENT_RECORD pEventRecord)
 
     Local<Function> f = Local<Function>::New(isolate, this->mCb);
 
-    LPWSTR szProviderGuidW = NULL;
-    LPWSTR szActivityGuidW = NULL;
-    StringFromCLSID(pEventRecord->EventHeader.ProviderId, &szProviderGuidW);
-    StringFromCLSID(pEventRecord->EventHeader.ActivityId, &szActivityGuidW);
+    wchar_t* szProviderGuidW = new wchar_t[40];
+    wchar_t* szActivityGuidW = new wchar_t[40];
+    StringFromGUID2(pEventRecord->EventHeader.ProviderId, szProviderGuidW, 40);
+    StringFromGUID2(pEventRecord->EventHeader.ActivityId, szActivityGuidW, 40);
 
     Local<Object> obj = Object::New(isolate);
 
-    char providerBuff[80];
-    wcstombs(providerBuff, szProviderGuidW, wcslen(szProviderGuidW));
-    obj->Set(String::NewFromUtf8(isolate, "providerId"), String::NewFromUtf8(isolate, providerBuff));
-    CoTaskMemFree(szProviderGuidW);
+    obj->Set(String::NewFromUtf8(isolate, "providerId"), String::NewFromTwoByte(isolate, (uint16_t*)szProviderGuidW));
+    delete[] szProviderGuidW;
 
-    char activityBuff[80];
-    wcstombs(activityBuff, szActivityGuidW, wcslen(szActivityGuidW));
-    obj->Set(String::NewFromUtf8(isolate, "activityId"), String::NewFromUtf8(isolate, activityBuff));
-    CoTaskMemFree(szActivityGuidW);
+    obj->Set(String::NewFromUtf8(isolate, "activityId"), String::NewFromTwoByte(isolate, (uint16_t*)szActivityGuidW));
+    delete[] szActivityGuidW;
 
     const unsigned argc = 1;
     Local<Value> argv[argc] = { obj };

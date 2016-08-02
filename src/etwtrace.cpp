@@ -97,13 +97,15 @@ void ETW::Status(const FunctionCallbackInfo<Value>& args)
 
 void ETW::OpenTrace(const FunctionCallbackInfo<Value>& args)
 {
-    Local<Function> cb = Local<Function>::Cast(args[0]);
-    NodeTraceConsumer consumer(cb);
-
     Isolate* isolate = Isolate::GetCurrent();
     HandleScope scope(isolate);
+
+    Local<Function> cb = Local<Function>::Cast(args[0]);
+    Persistent<Function, CopyablePersistentTraits<Function>> callback(isolate, cb);
+    NodeTraceConsumer* consumer = new NodeTraceConsumer(callback);
+
     ETW* obj = ObjectWrap::Unwrap<ETW>(args.Holder());
-    args.GetReturnValue().Set(Boolean::New(isolate, obj->pTraceSession->OpenTrace(&consumer)));
+    args.GetReturnValue().Set(Boolean::New(isolate, obj->pTraceSession->OpenTrace(consumer)));
 }
 
 void ETW::CloseTrace(const FunctionCallbackInfo<Value>& args)

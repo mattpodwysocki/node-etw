@@ -11,6 +11,7 @@
   "scripts": {
     "install": "node-pre-gyp install --fallback-to-build",
     "rebuild-all": "npm rebuild && node-gyp rebuild",
+    "rebuild-all-debug": "npm rebuild && node-gyp rebuild --debug",
     "gyp-rebuild": "node-gyp rebuild",
     "test": "tape test/**/*.js | tap-spec"
   },

@@ -12,8 +12,8 @@ using namespace v8;
 
 struct NodeTraceConsumer : ITraceConsumer
 {
-    NodeTraceConsumer(Local<Function> cb) : mCb(cb) { }
-    Local<Function> mCb;
+    NodeTraceConsumer(Persistent<Function, CopyablePersistentTraits<Function>> cb) : mCb(cb) { }
+    Persistent<Function, CopyablePersistentTraits<Function>> mCb;
 
     virtual bool ContinueProcessing() { return true; }
     virtual void OnEventRecord(_In_ PEVENT_RECORD pEventRecord);
@@ -21,23 +21,31 @@ struct NodeTraceConsumer : ITraceConsumer
 
 void NodeTraceConsumer::OnEventRecord(_In_ PEVENT_RECORD pEventRecord)
 {
-    wprintf(L"ProcessID %d\n", pEventRecord->EventHeader.ProcessId);
-    
     Isolate* isolate = Isolate::GetCurrent();
     HandleScope scope(isolate);
 
+    Local<Function> f = Local<Function>::New(isolate, this->mCb);
+
     LPWSTR szProviderGuidW = NULL;
+    LPWSTR szActivityGuidW = NULL;
     StringFromCLSID(pEventRecord->EventHeader.ProviderId, &szProviderGuidW);
+    StringFromCLSID(pEventRecord->EventHeader.ActivityId, &szActivityGuidW);
 
     Local<Object> obj = Object::New(isolate);
-    char cbuff[80];
-    wcstombs(cbuff, szProviderGuidW, wcslen(szProviderGuidW));
-    obj->Set(String::NewFromUtf8(isolate, "providerId"), String::NewFromUtf8(isolate, cbuff));
+
+    char providerBuff[80];
+    wcstombs(providerBuff, szProviderGuidW, wcslen(szProviderGuidW));
+    obj->Set(String::NewFromUtf8(isolate, "providerId"), String::NewFromUtf8(isolate, providerBuff));
     CoTaskMemFree(szProviderGuidW);
+
+    char activityBuff[80];
+    wcstombs(activityBuff, szActivityGuidW, wcslen(szActivityGuidW));
+    obj->Set(String::NewFromUtf8(isolate, "activityId"), String::NewFromUtf8(isolate, activityBuff));
+    CoTaskMemFree(szActivityGuidW);
 
     const unsigned argc = 1;
     Local<Value> argv[argc] = { obj };
-    mCb->Call(isolate->GetCurrentContext()->Global(), argc, argv);  
+    f->Call(isolate->GetCurrentContext()->Global(), argc, argv);  
 }
 
 #endif

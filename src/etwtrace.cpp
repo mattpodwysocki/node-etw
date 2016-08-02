@@ -1,8 +1,28 @@
 #include <Objbase.h>
+#include <node.h>
+#include <uv.h>
 #include "etwtrace.h"
 #include "nodetraceconsumer.h"
 
 using namespace v8;
+
+struct Work
+{
+    uv_work_t request;
+    TraceSession* session;
+};
+
+static void WorkAsync(uv_work_t* req)
+{
+    Work *work = static_cast<Work *>(req->data);
+    work->session->Process();
+}
+
+static void WorkAsyncComplete(uv_work_t *req, int status)
+{
+    Work *work = static_cast<Work *>(req->data);
+    delete work;
+}
 
 Persistent<Function> ETW::constructor;
 
@@ -167,7 +187,14 @@ void ETW::Process(const FunctionCallbackInfo<Value>& args)
     Isolate* isolate = Isolate::GetCurrent();
     HandleScope scope(isolate);
     ETW* obj = ObjectWrap::Unwrap<ETW>(args.Holder());
-    args.GetReturnValue().Set(Boolean::New(isolate, obj->pTraceSession->Process()));
+
+    Work* work = new Work();
+    work->request.data = work;
+    work->session = obj->pTraceSession;
+
+    uv_queue_work(uv_default_loop(), &work->request, WorkAsync, WorkAsyncComplete);
+
+    args.GetReturnValue().Set(Boolean::New(isolate, true));
 }
 
 extern "C" {

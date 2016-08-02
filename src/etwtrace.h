@@ -1,6 +1,8 @@
 #ifndef _etwtrace_h_
 #define  _etwtrace_h_
 
+bool g_ShouldRun = true;
+
 #include <node.h>
 #include <node_object_wrap.h>
 #include <exception>

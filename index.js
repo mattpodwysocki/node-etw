@@ -25,7 +25,7 @@ function run() {
     if (logger.status() === ERRORS.ERROR_ALREADY_EXISTS) {
       if (!logger.stop() || !logger.start()) {
         console.log(`Error in trace session ${logger.status}`);
-        //process.exit(1);
+        process.exit(1);
       }
     }
   }
@@ -36,7 +36,9 @@ function run() {
   }
 
   function logMessage(msg) {
-    console.log(`${msg.activityId}\t${msg.providerId}`);
+    console.log(`Acitivity ID: ${msg.activityId}`);
+    console.log(`Provider ID: ${msg.providerId}`);
+    console.log(`Process ID: ${msg.processId}`);
   }
 
   if (!logger.openTrace(logMessage)) {
@@ -50,13 +52,13 @@ function run() {
   }
 
   function closeTrace(e) {
-    console.log(`Error: ${e}`);
+    console.log('closing');
     logger.closeTrace();
     logger.disableProvider('{77754E9B-264B-4D8D-B981-E4135C1ECB0C}');
     logger.stop();
   }
 
   process.on('SIGINT', closeTrace);
-  process.on('SIGTERM', closeTrace);
+  process.on('SIGBREAK', closeTrace);
   process.on('uncaughtException', closeTrace);  
 }

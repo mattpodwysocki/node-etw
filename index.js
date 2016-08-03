@@ -36,9 +36,7 @@ function run() {
   }
 
   function logMessage(msg) {
-    console.log(`Acitivity ID: ${msg.activityId}`);
-    console.log(`Provider ID: ${msg.providerId}`);
-    console.log(`Process ID: ${msg.processId}`);
+    console.log(msg);
   }
 
   if (!logger.openTrace(logMessage)) {

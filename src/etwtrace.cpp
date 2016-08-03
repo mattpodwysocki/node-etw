@@ -122,7 +122,7 @@ void ETW::OpenTrace(const FunctionCallbackInfo<Value>& args)
 
     Local<Function> cb = Local<Function>::Cast(args[0]);
     Persistent<Function, CopyablePersistentTraits<Function>> callback(isolate, cb);
-    NodeTraceConsumer* consumer = new NodeTraceConsumer(callback);
+    NodeTraceConsumer* consumer = new NodeTraceConsumer(callback, isolate);
 
     ETW* obj = ObjectWrap::Unwrap<ETW>(args.Holder());
     args.GetReturnValue().Set(Boolean::New(isolate, obj->pTraceSession->OpenTrace(consumer)));
@@ -192,9 +192,10 @@ void ETW::Process(const FunctionCallbackInfo<Value>& args)
     work->request.data = work;
     work->session = obj->pTraceSession;
 
-    uv_queue_work(uv_default_loop(), &work->request, WorkAsync, WorkAsyncComplete);
+    //uv_queue_work(uv_default_loop(), &work->request, WorkAsync, WorkAsyncComplete);
 
-    args.GetReturnValue().Set(Boolean::New(isolate, true));
+    args.GetReturnValue().Set(Boolean::New(isolate, obj->pTraceSession->Process()));
+    //args.GetReturnValue().Set(Boolean::New(isolate, true));
 }
 
 extern "C" {

@@ -9,35 +9,19 @@ UCHAR g_PointerSize;
 #include <evntcons.h>
 #include <node.h>
 #include "traceconsumer.h"
+#include "eventproperties.h"
 
 using namespace v8;
 
-DWORD GetEventInformation(PEVENT_RECORD pEvent, PTRACE_EVENT_INFO & pInfo)
-{
-	DWORD status = ERROR_SUCCESS;
-	DWORD BufferSize = 0;
-
-	status = TdhGetEventInformation(pEvent, 0, NULL, pInfo, &BufferSize);
-
-	if (ERROR_INSUFFICIENT_BUFFER == status)
-	{
-		pInfo = (TRACE_EVENT_INFO*)malloc(BufferSize);
-		if (pInfo == NULL)
-		{
-			return ERROR_OUTOFMEMORY;
-		}
-
-		status = TdhGetEventInformation(pEvent, 0, NULL, pInfo, &BufferSize);
-	}
-
-	return status;
-}
-
 struct NodeTraceConsumer : ITraceConsumer
 {
-    NodeTraceConsumer(Persistent<Function, CopyablePersistentTraits<Function>> cb, Isolate* isolate) : mCb(cb), mIsolate(isolate) { }
-    Persistent<Function, CopyablePersistentTraits<Function>> mCb;
-    Isolate* mIsolate;
+    NodeTraceConsumer(Persistent<Function, CopyablePersistentTraits<Function>> cb) : m_cb(cb) { }
+    ~NodeTraceConsumer()
+    {
+		this->m_cb.Reset();
+    }
+
+    Persistent<Function, CopyablePersistentTraits<Function>> m_cb;
 
     virtual bool ContinueProcessing() { return g_ShouldRun; }
     virtual void OnEventRecord(_In_ PEVENT_RECORD pEventRecord);
@@ -49,19 +33,21 @@ void NodeTraceConsumer::OnEventRecord(_In_ PEVENT_RECORD pEventRecord)
     HandleScope scope(isolate);
 
     Local<Object> obj = Object::New(isolate);
+	Local<Object> header = Object::New(isolate);
+	obj->Set(String::NewFromUtf8(isolate, "header"), header);
 
     wchar_t* szProviderGuidW = new wchar_t[40];
     wchar_t* szActivityGuidW = new wchar_t[40];
     StringFromGUID2(pEventRecord->EventHeader.ProviderId, szProviderGuidW, 40);
     StringFromGUID2(pEventRecord->EventHeader.ActivityId, szActivityGuidW, 40);
 
-    obj->Set(String::NewFromUtf8(isolate, "providerId"), String::NewFromTwoByte(isolate, (uint16_t*)szProviderGuidW));
+	header->Set(String::NewFromUtf8(isolate, "providerId"), String::NewFromTwoByte(isolate, (uint16_t*)szProviderGuidW));
     delete[] szProviderGuidW;
 
-    obj->Set(String::NewFromUtf8(isolate, "activityId"), String::NewFromTwoByte(isolate, (uint16_t*)szActivityGuidW));
+	header->Set(String::NewFromUtf8(isolate, "activityId"), String::NewFromTwoByte(isolate, (uint16_t*)szActivityGuidW));
     delete[] szActivityGuidW;
 
-    obj->Set(String::NewFromUtf8(isolate, "processId"), Integer::NewFromUnsigned(isolate, pEventRecord->EventHeader.ProcessId));
+	header->Set(String::NewFromUtf8(isolate, "processId"), Integer::NewFromUnsigned(isolate, pEventRecord->EventHeader.ProcessId));
 
     ULONGLONG TimeStamp = 0;
     ULONGLONG Nanoseconds = 0;
@@ -72,75 +58,88 @@ void NodeTraceConsumer::OnEventRecord(_In_ PEVENT_RECORD pEventRecord)
     ft.dwHighDateTime = pEventRecord->EventHeader.TimeStamp.HighPart;
     ft.dwLowDateTime = pEventRecord->EventHeader.TimeStamp.LowPart;
 
-	if (FileTimeToSystemTime(&ft, &st) && SystemTimeToTzSpecificLocalTime(NULL, &st, &stLocal))
-	{
-		TimeStamp = pEventRecord->EventHeader.TimeStamp.QuadPart;
-		Nanoseconds = (TimeStamp % 10000000) * 100;
+    if (FileTimeToSystemTime(&ft, &st) && SystemTimeToTzSpecificLocalTime(NULL, &st, &stLocal))
+    {
+        TimeStamp = pEventRecord->EventHeader.TimeStamp.QuadPart;
+        Nanoseconds = (TimeStamp % 10000000) * 100;
 
-		Local<Object> timeObj = Object::New(isolate);
-		timeObj->Set(String::NewFromUtf8(isolate, "year"), Integer::New(isolate, stLocal.wYear));
-		timeObj->Set(String::NewFromUtf8(isolate, "month"), Integer::New(isolate, stLocal.wMonth));
-		timeObj->Set(String::NewFromUtf8(isolate, "day"), Integer::New(isolate, stLocal.wDay));
-		timeObj->Set(String::NewFromUtf8(isolate, "hour"), Integer::New(isolate, stLocal.wHour));
-		timeObj->Set(String::NewFromUtf8(isolate, "minute"), Integer::New(isolate, stLocal.wMinute));
-		timeObj->Set(String::NewFromUtf8(isolate, "second"), Integer::New(isolate, stLocal.wSecond));
-		timeObj->Set(String::NewFromUtf8(isolate, "milliseconds"), Integer::New(isolate, stLocal.wMilliseconds));
-		timeObj->Set(String::NewFromUtf8(isolate, "nanoseconds"), Integer::New(isolate, Nanoseconds));
+        Local<Object> timeObj = Object::New(isolate);
+        timeObj->Set(String::NewFromUtf8(isolate, "year"), Uint32::New(isolate, stLocal.wYear));
+        timeObj->Set(String::NewFromUtf8(isolate, "month"), Uint32::New(isolate, stLocal.wMonth));
+        timeObj->Set(String::NewFromUtf8(isolate, "day"), Uint32::New(isolate, stLocal.wDay));
+        timeObj->Set(String::NewFromUtf8(isolate, "hour"), Uint32::New(isolate, stLocal.wHour));
+        timeObj->Set(String::NewFromUtf8(isolate, "minute"), Uint32::New(isolate, stLocal.wMinute));
+        timeObj->Set(String::NewFromUtf8(isolate, "second"), Uint32::New(isolate, stLocal.wSecond));
+        timeObj->Set(String::NewFromUtf8(isolate, "milliseconds"), Uint32::New(isolate, stLocal.wMilliseconds));
+        timeObj->Set(String::NewFromUtf8(isolate, "nanoseconds"), Integer::NewFromUnsigned(isolate, Nanoseconds));
 
-		obj->Set(String::NewFromUtf8(isolate, "timestamp"), timeObj);
-	}
-	else
-	{
-		obj->Set(String::NewFromUtf8(isolate, "timestamp"), Undefined(isolate));
-	}
+        obj->Set(String::NewFromUtf8(isolate, "timestamp"), timeObj);
+    }
+    else
+    {
+		header->Set(String::NewFromUtf8(isolate, "timestamp"), Undefined(isolate));
+    }
 
-	PTRACE_EVENT_INFO pInfo = NULL;
-	DWORD status = ERROR_SUCCESS;
+    PTRACE_EVENT_INFO pInfo = NULL;
+    DWORD status = ERROR_SUCCESS;
 
-	status = GetEventInformation(pEventRecord, pInfo);
-	if (status != ERROR_SUCCESS)
-	{
-		Nan::ErrnoException(status);
-		return;
-	}
+    status = GetEventInformation(pEventRecord, pInfo);
+    if (status != ERROR_SUCCESS)
+    {
+        Nan::ErrnoException(status);
+        return;
+    }
 
-	if (DecodingSourceWbem == pInfo->DecodingSource)
-	{
-		wchar_t* szEventId = new wchar_t[40];
-		StringFromGUID2(pInfo->EventGuid, szEventId, 40);
-		obj->Set(String::NewFromUtf8(isolate, "eventGuid"), String::NewFromTwoByte(isolate, (uint16_t*)szEventId));
-		delete[] szEventId;
+    if (DecodingSourceWbem == pInfo->DecodingSource)
+    {
+        wchar_t* szEventId = new wchar_t[40];
+        StringFromGUID2(pInfo->EventGuid, szEventId, 40);
+		header->Set(String::NewFromUtf8(isolate, "eventGuid"), String::NewFromTwoByte(isolate, (uint16_t*)szEventId));
+        delete[] szEventId;
 
-		obj->Set(String::NewFromUtf8(isolate, "eventVersion"), Integer::NewFromUnsigned(isolate, pEventRecord->EventHeader.EventDescriptor.Version));
-		obj->Set(String::NewFromUtf8(isolate, "opCode"), Integer::NewFromUnsigned(isolate, pEventRecord->EventHeader.EventDescriptor.Opcode));
-	}
-	else if (DecodingSourceXMLFile == pInfo->DecodingSource)
-	{
-		obj->Set(String::NewFromUtf8(isolate, "eventId"), Integer::NewFromUnsigned(isolate, pInfo->EventDescriptor.Id));
-	}
+		header->Set(String::NewFromUtf8(isolate, "eventVersion"), Uint32::NewFromUnsigned(isolate, pEventRecord->EventHeader.EventDescriptor.Version));
+		header->Set(String::NewFromUtf8(isolate, "opCode"), Uint32::NewFromUnsigned(isolate, pEventRecord->EventHeader.EventDescriptor.Opcode));
+    }
+    else if (DecodingSourceXMLFile == pInfo->DecodingSource)
+    {
+		header->Set(String::NewFromUtf8(isolate, "eventId"), Uint32::NewFromUnsigned(isolate, pInfo->EventDescriptor.Id));
+    }
 
-	if (EVENT_HEADER_FLAG_32_BIT_HEADER == (pEventRecord->EventHeader.Flags & EVENT_HEADER_FLAG_32_BIT_HEADER))
-	{
-		g_PointerSize = 4;
-	}
-	else
-	{
-		g_PointerSize = 8;
-	}
+    if (EVENT_HEADER_FLAG_32_BIT_HEADER == (pEventRecord->EventHeader.Flags & EVENT_HEADER_FLAG_32_BIT_HEADER))
+    {
+        g_PointerSize = 4;
+    }
+    else
+    {
+        g_PointerSize = 8;
+    }
 
-	if (EVENT_HEADER_FLAG_STRING_ONLY == (pEventRecord->EventHeader.Flags & EVENT_HEADER_FLAG_STRING_ONLY))
-	{
-		obj->Set(String::NewFromUtf8(isolate, "userData"), String::NewFromTwoByte(isolate, (uint16_t*)pEventRecord->UserData));
-	}
+    if (EVENT_HEADER_FLAG_STRING_ONLY == (pEventRecord->EventHeader.Flags & EVENT_HEADER_FLAG_STRING_ONLY))
+    {
+        obj->Set(String::NewFromUtf8(isolate, "userData"), String::NewFromTwoByte(isolate, (uint16_t*)pEventRecord->UserData));
+    }
+    else
+    {
+        for (USHORT i = 0; i < pInfo->TopLevelPropertyCount; i++)
+        {
+			Handle<Value> topLevelProperty;
+            status = GetEventProperties(pEventRecord, pInfo, i, NULL, 0, &topLevelProperty);
+            if (ERROR_SUCCESS != status)
+            {
+				Nan::ErrnoException(status);
+				return;
+            }
+        }
+    }
 
-	if (pInfo)
-	{
-		delete pInfo;
-	}
+    if (pInfo)
+    {
+        delete pInfo;
+    }
 
     const unsigned argc = 1;
     Local<Value> argv[argc] = { obj };
-    Local<Function> f = Local<Function>::New(isolate, this->mCb);
+    Local<Function> f = Local<Function>::New(isolate, this->m_cb);
     f->Call(isolate->GetCurrentContext()->Global(), argc, argv);  
 }
 

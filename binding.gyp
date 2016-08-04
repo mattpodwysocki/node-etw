@@ -14,6 +14,7 @@
       'msvs_precompiled_source': 'src/stdafx.cpp',
       'libraries': [ 
         'tdh.lib',
+        'ws2_32.lib',
       ],
       'defines': [
         'UNICODE',

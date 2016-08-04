@@ -6,34 +6,16 @@
 
 using namespace v8;
 
-struct Work
-{
-    uv_work_t request;
-    TraceSession* session;
-};
-
-static void WorkAsync(uv_work_t* req)
-{
-    Work *work = static_cast<Work *>(req->data);
-    work->session->Process();
-}
-
-static void WorkAsyncComplete(uv_work_t *req, int status)
-{
-    Work *work = static_cast<Work *>(req->data);
-    delete work;
-}
-
 Persistent<Function> ETW::constructor;
 
 ETW::ETW(const wchar_t* szSessionName)
 {
-    this->pTraceSession = new TraceSession(szSessionName);
+    this->m_pTraceSession = new TraceSession(szSessionName);
 }
 
 ETW::~ETW()
 {
-    delete this->pTraceSession;
+    delete this->m_pTraceSession;
 }
 
 void ETW::Init(Local<Object> exports)
@@ -96,7 +78,7 @@ void ETW::Start(const FunctionCallbackInfo<Value>& args)
     Isolate* isolate = Isolate::GetCurrent();
     HandleScope scope(isolate);
     ETW* obj = ObjectWrap::Unwrap<ETW>(args.Holder());
-    args.GetReturnValue().Set(Boolean::New(isolate, obj->pTraceSession->Start()));
+    args.GetReturnValue().Set(Boolean::New(isolate, obj->m_pTraceSession->Start()));
 }
 
 void ETW::Stop(const FunctionCallbackInfo<Value>& args)
@@ -104,7 +86,7 @@ void ETW::Stop(const FunctionCallbackInfo<Value>& args)
     Isolate* isolate = Isolate::GetCurrent();
     HandleScope scope(isolate);
     ETW* obj = ObjectWrap::Unwrap<ETW>(args.Holder());
-    args.GetReturnValue().Set(Boolean::New(isolate, obj->pTraceSession->Stop()));
+    args.GetReturnValue().Set(Boolean::New(isolate, obj->m_pTraceSession->Stop()));
 }
 
 void ETW::Status(const FunctionCallbackInfo<Value>& args)
@@ -112,7 +94,7 @@ void ETW::Status(const FunctionCallbackInfo<Value>& args)
     Isolate* isolate = Isolate::GetCurrent();
     HandleScope scope(isolate);
     ETW* obj = ObjectWrap::Unwrap<ETW>(args.Holder());
-    args.GetReturnValue().Set(Number::New(isolate, obj->pTraceSession->Status()));
+    args.GetReturnValue().Set(Number::New(isolate, obj->m_pTraceSession->Status()));
 }
 
 void ETW::OpenTrace(const FunctionCallbackInfo<Value>& args)
@@ -122,10 +104,11 @@ void ETW::OpenTrace(const FunctionCallbackInfo<Value>& args)
 
     Local<Function> cb = Local<Function>::Cast(args[0]);
     Persistent<Function, CopyablePersistentTraits<Function>> callback(isolate, cb);
-    NodeTraceConsumer* consumer = new NodeTraceConsumer(callback, isolate);
+    NodeTraceConsumer* consumer = new NodeTraceConsumer(callback);
 
     ETW* obj = ObjectWrap::Unwrap<ETW>(args.Holder());
-    args.GetReturnValue().Set(Boolean::New(isolate, obj->pTraceSession->OpenTrace(consumer)));
+    obj->m_traceConsumers.push_back(consumer);
+    args.GetReturnValue().Set(Boolean::New(isolate, obj->m_pTraceSession->OpenTrace(consumer)));
 }
 
 void ETW::CloseTrace(const FunctionCallbackInfo<Value>& args)
@@ -133,7 +116,16 @@ void ETW::CloseTrace(const FunctionCallbackInfo<Value>& args)
     Isolate* isolate = Isolate::GetCurrent();
     HandleScope scope(isolate);
     ETW* obj = ObjectWrap::Unwrap<ETW>(args.Holder());
-    args.GetReturnValue().Set(Boolean::New(isolate, obj->pTraceSession->CloseTrace()));
+    bool closeTrace = obj->m_pTraceSession->CloseTrace();
+
+    int ii;
+    for(ii=0; ii < obj->m_traceConsumers.size(); ii++)
+    {
+        delete obj->m_traceConsumers[ii];
+    }
+    obj->m_traceConsumers.clear();
+
+    args.GetReturnValue().Set(Boolean::New(isolate, closeTrace));
 }
 
 void ETW::EnableProvider(const FunctionCallbackInfo<Value>& args)
@@ -157,7 +149,7 @@ void ETW::EnableProvider(const FunctionCallbackInfo<Value>& args)
     Isolate* isolate = Isolate::GetCurrent();
     HandleScope scope(isolate);
     ETW* obj = ObjectWrap::Unwrap<ETW>(args.Holder());
-    args.GetReturnValue().Set(Boolean::New(isolate, obj->pTraceSession->EnableProvider(nodeGuid, logLevel)));
+    args.GetReturnValue().Set(Boolean::New(isolate, obj->m_pTraceSession->EnableProvider(nodeGuid, logLevel)));
 }
 
 void ETW::DisableProvider(const FunctionCallbackInfo<Value>& args)
@@ -179,7 +171,7 @@ void ETW::DisableProvider(const FunctionCallbackInfo<Value>& args)
     Isolate* isolate = Isolate::GetCurrent();
     HandleScope scope(isolate);
     ETW* obj = ObjectWrap::Unwrap<ETW>(args.Holder());
-    args.GetReturnValue().Set(Boolean::New(isolate, obj->pTraceSession->DisableProvider(nodeGuid)));
+    args.GetReturnValue().Set(Boolean::New(isolate, obj->m_pTraceSession->DisableProvider(nodeGuid)));
 }
 
 void ETW::Process(const FunctionCallbackInfo<Value>& args)
@@ -188,14 +180,8 @@ void ETW::Process(const FunctionCallbackInfo<Value>& args)
     HandleScope scope(isolate);
     ETW* obj = ObjectWrap::Unwrap<ETW>(args.Holder());
 
-    Work* work = new Work();
-    work->request.data = work;
-    work->session = obj->pTraceSession;
-
-    //uv_queue_work(uv_default_loop(), &work->request, WorkAsync, WorkAsyncComplete);
-
-    args.GetReturnValue().Set(Boolean::New(isolate, obj->pTraceSession->Process()));
-    //args.GetReturnValue().Set(Boolean::New(isolate, true));
+    // TODO: Find out how to unblock main thread
+    args.GetReturnValue().Set(Boolean::New(isolate, obj->m_pTraceSession->Process()));
 }
 
 extern "C" {

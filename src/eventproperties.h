@@ -139,6 +139,7 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
 		wchar_t* buf = new wchar_t[StringLength + 100];
 		swprintf(buf, L"%.*s", StringLength, (LPWSTR)pData);
 		*pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
+		delete[] buf;
         break;
     }
 
@@ -392,9 +393,9 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
         else
         {
 			Local<Object> userObj = Object::New(isolate);
-			//userObj->Set(String::NewFromUtf8(isolate, "domain"), String::NewFromTwoByte(isolate, (uint16_t*)DomainName));
-			//userObj->Set(String::NewFromUtf8(isolate, "user"), String::NewFromTwoByte(isolate, (uint16_t*)UserName));
-			// TODO: Add to main obj
+			userObj->Set(String::NewFromUtf8(isolate, "domain"), String::NewFromTwoByte(isolate, (uint16_t*)DomainName));
+			userObj->Set(String::NewFromUtf8(isolate, "user"), String::NewFromTwoByte(isolate, (uint16_t*)UserName));
+			*pLocalObject = userObj;
 			//wprintf(L"%s\\%s\n", DomainName, UserName);
         }
 

@@ -262,10 +262,18 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
         }
         else if (TDH_OUTTYPE_IPV4 == OutType)
         {
+			wchar_t buf[100];
+			wsprintf(buf, L"%d.%d.%d.%d\n", (*(PLONG)pData >> 0) & 0xff,
+				(*(PLONG)pData >> 8) & 0xff,
+				(*(PLONG)pData >> 16) & 0xff,
+				(*(PLONG)pData >> 24) & 0xff);
+			*pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
+			/*
             wprintf(L"%d.%d.%d.%d\n", (*(PLONG)pData >> 0) & 0xff,
                 (*(PLONG)pData >> 8) & 0xff,
                 (*(PLONG)pData >> 16) & 0xff,
                 (*(PLONG)pData >> 24) & 0xff);
+			*/
         }
         else
         {

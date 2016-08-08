@@ -135,8 +135,10 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
             StringLength = wcslen((LPWSTR)pData);
         }
 
-        wprintf(L"%.*s\n", StringLength, (LPWSTR)pData);
-
+       // wprintf(L"%.*s\n", StringLength, (LPWSTR)pData);
+		wchar_t* buf = new wchar_t[StringLength + 100];
+		swprintf(buf, L"%.*s", StringLength, (LPWSTR)pData);
+		*pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
         break;
     }
 
@@ -401,14 +403,19 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
 
     case TDH_INTYPE_HEXINT32:
     {
-		Local<Integer> hex32Obj = Uint32::NewFromUnsigned(isolate, *((PULONG)pData));
+		wchar_t buf[512];
+		wsprintf(buf, L"0x%x", (PULONG)pData);
+		*pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
         //wprintf(L"0x%x\n", (PULONG)pData);
         break;
     }
 
     case TDH_INTYPE_HEXINT64:
     {
-		*pLocalObject = Uint32::NewFromUnsigned(isolate, *((PULONGLONG)pData));
+		wchar_t buf[512];
+		wsprintf(buf, L"0x%x", (PULONGLONG)pData);
+		*pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
+		
         //wprintf(L"0x%x\n", (PULONGLONG)pData);
         break;
     }
@@ -416,13 +423,14 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
     case TDH_INTYPE_UNICODECHAR:
     {;
 		*pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)pData);
-        wprintf(L"%c\n", *(PWCHAR)pData);
+        //wprintf(L"%c\n", *(PWCHAR)pData);
         break;
     }
 
     case TDH_INTYPE_ANSICHAR:
     {
-        wprintf(L"%C\n", *(PCHAR)pData);
+		*pLocalObject = String::NewFromUtf8(isolate, (PCHAR)pData);
+        //wprintf(L"%C\n", *(PCHAR)pData);
         break;
     }
 

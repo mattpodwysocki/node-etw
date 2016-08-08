@@ -167,13 +167,18 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
             StringLength = strlen((LPSTR)pData);
         }
 
-        wprintf(L"%.*S\n", StringLength, (LPSTR)pData);
+        //wprintf(L"%.*S\n", StringLength, (LPSTR)pData);
+		wchar_t* buf = new wchar_t[StringLength + 100];
+		swprintf(buf, L"%.*S", StringLength, (LPSTR)pData);
+		*pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
+		delete[] buf;
         break;
     }
 
     case TDH_INTYPE_INT8:
     {
-        wprintf(L"%hd\n", *(PCHAR)pData);
+		*pLocalObject = Integer::New(isolate, *(PCHAR)pData);
+        //wprintf(L"%hd\n", *(PCHAR)pData);
         break;
     }
 
@@ -181,11 +186,15 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
     {
         if (TDH_OUTTYPE_HEXINT8 == OutType)
         {
-            wprintf(L"0x%x\n", *(PBYTE)pData);
+			wchar_t buf[100];
+			wsprintf(buf, L"0x%x\n", *(PBYTE)pData);
+			*pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
+			//wprintf(L"0x%x\n", *(PBYTE)pData);
         }
         else
         {
-            wprintf(L"%hu\n", *(PBYTE)pData);
+			*pLocalObject = Integer::New(isolate, *(PBYTE)pData);
+            //wprintf(L"%hu\n", *(PBYTE)pData);
         }
 
         break;
@@ -193,7 +202,8 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
 
     case TDH_INTYPE_INT16:
     {
-        wprintf(L"%hd\n", *(PSHORT)pData);
+		*pLocalObject = Integer::New(isolate, *(PSHORT)pData);
+        //wprintf(L"%hd\n", *(PSHORT)pData);
         break;
     }
 
@@ -201,7 +211,10 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
     {
         if (TDH_OUTTYPE_HEXINT16 == OutType)
         {
-            wprintf(L"0x%x\n", *(PUSHORT)pData);
+			wchar_t buf[100];
+			wsprintf(buf, L"0x%x\n", *(PUSHORT)pData);
+			*pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
+            //wprintf(L"0x%x\n", *(PUSHORT)pData);
         }
         else if (TDH_OUTTYPE_PORT == OutType)
         {

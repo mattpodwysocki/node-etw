@@ -218,11 +218,13 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
         }
         else if (TDH_OUTTYPE_PORT == OutType)
         {
-            wprintf(L"%hu\n", ntohs(*(PUSHORT)pData));
+			*pLocalObject = Integer::NewFromUnsigned(isolate, ntohs(*(PUSHORT)pData));
+            //wprintf(L"%hu\n", ntohs(*(PUSHORT)pData));
         }
         else
         {
-            wprintf(L"%hu\n", *(PUSHORT)pData);
+			*pLocalObject = Integer::NewFromUnsigned(isolate, *(PUSHORT)pData);
+            //wprintf(L"%hu\n", *(PUSHORT)pData);
         }
 
         break;
@@ -232,11 +234,15 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
     {
         if (TDH_OUTTYPE_HRESULT == OutType)
         {
-            wprintf(L"0x%x\n", *(PLONG)pData);
+			wchar_t buf[100];
+			wsprintf(buf, L"0x%x\n", *(PLONG)pData);
+			*pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
+            //wprintf(L"0x%x\n", *(PLONG)pData);
         }
         else
         {
-            wprintf(L"%d\n", *(PLONG)pData);
+			*pLocalObject = Integer::New(isolate, *(PLONG)pData);
+            //wprintf(L"%d\n", *(PLONG)pData);
         }
 
         break;
@@ -249,7 +255,10 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
             TDH_OUTTYPE_NTSTATUS == OutType ||
             TDH_OUTTYPE_HEXINT32 == OutType)
         {
-            wprintf(L"0x%x\n", *(PULONG)pData);
+			wchar_t buf[100];
+			wsprintf(buf, L"0x%x\n", *(PULONG)pData);
+			*pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
+            //wprintf(L"0x%x\n", *(PULONG)pData);
         }
         else if (TDH_OUTTYPE_IPV4 == OutType)
         {

@@ -8,6 +8,7 @@
 #include <evntcons.h>
 #include <tdh.h>
 #include <node.h>
+#include "asprintf.h"
 
 DWORD GetEventInformation(PEVENT_RECORD pEvent, PTRACE_EVENT_INFO & pInfo);
 DWORD GetEventProperties(PEVENT_RECORD pEvent, PTRACE_EVENT_INFO pInfo, USHORT i, LPWSTR pStructureName, USHORT StructIndex, Handle<Value>* pLocalObject);
@@ -136,10 +137,10 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
         }
 
        // wprintf(L"%.*s\n", StringLength, (LPWSTR)pData);
-        wchar_t* buf = new wchar_t[StringLength + 100];
-        swprintf(buf, L"%.*s", StringLength, (LPWSTR)pData);
-        *pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
-        delete[] buf;
+		wchar_t* buff = NULL;
+		aswprintf(&buff, L"%.*s\n", StringLength, (LPWSTR)pData);
+		*pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buff);
+		free(buff);
         break;
     }
 
@@ -320,21 +321,23 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
     case TDH_INTYPE_FLOAT:
     {
         *pLocalObject = Number::New(isolate, *(PFLOAT)pData);
-        wprintf(L"%f\n", *(PFLOAT)pData);
+        //wprintf(L"%f\n", *(PFLOAT)pData);
 
         break;
     }
 
     case TDH_INTYPE_DOUBLE:
     {
-        wprintf(L"%I64f\n", *(DOUBLE*)pData);
+        *pLocalObject = Number::New(isolate, *(DOUBLE*)pData);
+        //wprintf(L"%I64f\n", *(DOUBLE*)pData);
 
         break;
     }
 
     case TDH_INTYPE_BOOLEAN:
     {
-        wprintf(L"%s\n", (0 == (PBOOL)pData) ? L"false" : L"true");
+        *pLocalObject = Boolean::New(isolate, (0 == (PBOOL)pData) ? false : true);
+        //wprintf(L"%s\n", (0 == (PBOOL)pData) ? L"false" : L"true");
 
         break;
     }
@@ -356,12 +359,14 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
 
             fnRtlIpv6AddressToString((IN6_ADDR*)pData, IPv6AddressAsString);
 
-            wprintf(L"%s\n", IPv6AddressAsString);
+            *pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)IPv6AddressAsString);
+            //wprintf(L"%s\n", IPv6AddressAsString);
         }
         else
         {
             for (DWORD i = 0; i < DataSize; i++)
             {
+                
                 wprintf(L"%.2x", pData[i]);
             }
 

@@ -12,7 +12,7 @@
 DWORD GetEventInformation(PEVENT_RECORD pEvent, PTRACE_EVENT_INFO & pInfo);
 DWORD GetEventProperties(PEVENT_RECORD pEvent, PTRACE_EVENT_INFO pInfo, USHORT i, LPWSTR pStructureName, USHORT StructIndex, Handle<Value>* pLocalObject);
 DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYTE pData, DWORD DataSize, PEVENT_MAP_INFO pMapInfo, Handle<Value>* pLocalObject);
-void PrintMapString(PEVENT_MAP_INFO pMapInfo, PBYTE pData);
+void PrintMapString(PEVENT_MAP_INFO pMapInfo, PBYTE pData, Handle<Value>* pLocalObject);
 DWORD GetArraySize(PEVENT_RECORD pEvent, PTRACE_EVENT_INFO pInfo, USHORT i, PUSHORT ArraySize);
 DWORD GetMapInfo(PEVENT_RECORD pEvent, LPWSTR pMapName, DWORD DecodingSource, PEVENT_MAP_INFO & pMapInfo);
 void RemoveTrailingSpace(PEVENT_MAP_INFO pMapInfo);
@@ -24,7 +24,7 @@ typedef LPTSTR(NTAPI *PIPV6ADDRTOSTRING) (
     LPTSTR S
 );
 
-void PrintMapString(PEVENT_MAP_INFO pMapInfo, PBYTE pData)
+void PrintMapString(PEVENT_MAP_INFO pMapInfo, PBYTE pData, Handle<Value>* pLocalObject)
 {
     BOOL MatchFound = FALSE;
 
@@ -279,11 +279,12 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
         {
             if (pMapInfo)
             {
-                PrintMapString(pMapInfo, pData);
+                PrintMapString(pMapInfo, pData, pLocalObject);
             }
             else
             {
-                wprintf(L"%lu\n", *(PULONG)pData);
+				*pLocalObject = Integer::NewFromUnsigned(isolate, *(PULONG)pData);
+                //wprintf(L"%lu\n", *(PULONG)pData);
             }
         }
 
@@ -292,7 +293,8 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
 
     case TDH_INTYPE_INT64:
     {
-        wprintf(L"%I64d\n", *(PLONGLONG)pData);
+		*pLocalObject = Integer::New(isolate, *(PLONGLONG)pData);
+		//wprintf(L"%I64d\n", *(PLONGLONG)pData);
 
         break;
     }

@@ -106,8 +106,8 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
 {
     UNREFERENCED_PARAMETER(pEvent);
     DWORD status = ERROR_SUCCESS;
-	Isolate* isolate = Isolate::GetCurrent();
-	HandleScope scope(isolate);
+    Isolate* isolate = Isolate::GetCurrent();
+    HandleScope scope(isolate);
 
     switch (InType)
     {
@@ -136,10 +136,10 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
         }
 
        // wprintf(L"%.*s\n", StringLength, (LPWSTR)pData);
-		wchar_t* buf = new wchar_t[StringLength + 100];
-		swprintf(buf, L"%.*s", StringLength, (LPWSTR)pData);
-		*pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
-		delete[] buf;
+        wchar_t* buf = new wchar_t[StringLength + 100];
+        swprintf(buf, L"%.*s", StringLength, (LPWSTR)pData);
+        *pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
+        delete[] buf;
         break;
     }
 
@@ -168,16 +168,16 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
         }
 
         //wprintf(L"%.*S\n", StringLength, (LPSTR)pData);
-		wchar_t* buf = new wchar_t[StringLength + 100];
-		swprintf(buf, L"%.*S", StringLength, (LPSTR)pData);
-		*pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
-		delete[] buf;
+        wchar_t* buf = new wchar_t[StringLength + 100];
+        swprintf(buf, L"%.*S", StringLength, (LPSTR)pData);
+        *pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
+        delete[] buf;
         break;
     }
 
     case TDH_INTYPE_INT8:
     {
-		*pLocalObject = Integer::New(isolate, *(PCHAR)pData);
+        *pLocalObject = Integer::New(isolate, *(PCHAR)pData);
         //wprintf(L"%hd\n", *(PCHAR)pData);
         break;
     }
@@ -186,14 +186,14 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
     {
         if (TDH_OUTTYPE_HEXINT8 == OutType)
         {
-			wchar_t buf[100];
-			wsprintf(buf, L"0x%x\n", *(PBYTE)pData);
-			*pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
-			//wprintf(L"0x%x\n", *(PBYTE)pData);
+            wchar_t buf[100];
+            wsprintf(buf, L"0x%x\n", *(PBYTE)pData);
+            *pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
+            //wprintf(L"0x%x\n", *(PBYTE)pData);
         }
         else
         {
-			*pLocalObject = Integer::New(isolate, *(PBYTE)pData);
+            *pLocalObject = Integer::New(isolate, *(PBYTE)pData);
             //wprintf(L"%hu\n", *(PBYTE)pData);
         }
 
@@ -202,7 +202,7 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
 
     case TDH_INTYPE_INT16:
     {
-		*pLocalObject = Integer::New(isolate, *(PSHORT)pData);
+        *pLocalObject = Integer::New(isolate, *(PSHORT)pData);
         //wprintf(L"%hd\n", *(PSHORT)pData);
         break;
     }
@@ -211,19 +211,19 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
     {
         if (TDH_OUTTYPE_HEXINT16 == OutType)
         {
-			wchar_t buf[100];
-			wsprintf(buf, L"0x%x\n", *(PUSHORT)pData);
-			*pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
+            wchar_t buf[100];
+            wsprintf(buf, L"0x%x\n", *(PUSHORT)pData);
+            *pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
             //wprintf(L"0x%x\n", *(PUSHORT)pData);
         }
         else if (TDH_OUTTYPE_PORT == OutType)
         {
-			*pLocalObject = Integer::NewFromUnsigned(isolate, ntohs(*(PUSHORT)pData));
+            *pLocalObject = Integer::NewFromUnsigned(isolate, ntohs(*(PUSHORT)pData));
             //wprintf(L"%hu\n", ntohs(*(PUSHORT)pData));
         }
         else
         {
-			*pLocalObject = Integer::NewFromUnsigned(isolate, *(PUSHORT)pData);
+            *pLocalObject = Integer::NewFromUnsigned(isolate, *(PUSHORT)pData);
             //wprintf(L"%hu\n", *(PUSHORT)pData);
         }
 
@@ -234,14 +234,14 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
     {
         if (TDH_OUTTYPE_HRESULT == OutType)
         {
-			wchar_t buf[100];
-			wsprintf(buf, L"0x%x\n", *(PLONG)pData);
-			*pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
+            wchar_t buf[100];
+            wsprintf(buf, L"0x%x\n", *(PLONG)pData);
+            *pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
             //wprintf(L"0x%x\n", *(PLONG)pData);
         }
         else
         {
-			*pLocalObject = Integer::New(isolate, *(PLONG)pData);
+            *pLocalObject = Integer::New(isolate, *(PLONG)pData);
             //wprintf(L"%d\n", *(PLONG)pData);
         }
 
@@ -255,25 +255,25 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
             TDH_OUTTYPE_NTSTATUS == OutType ||
             TDH_OUTTYPE_HEXINT32 == OutType)
         {
-			wchar_t buf[100];
-			wsprintf(buf, L"0x%x\n", *(PULONG)pData);
-			*pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
+            wchar_t buf[100];
+            wsprintf(buf, L"0x%x\n", *(PULONG)pData);
+            *pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
             //wprintf(L"0x%x\n", *(PULONG)pData);
         }
         else if (TDH_OUTTYPE_IPV4 == OutType)
         {
-			wchar_t buf[100];
-			wsprintf(buf, L"%d.%d.%d.%d\n", (*(PLONG)pData >> 0) & 0xff,
-				(*(PLONG)pData >> 8) & 0xff,
-				(*(PLONG)pData >> 16) & 0xff,
-				(*(PLONG)pData >> 24) & 0xff);
-			*pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
-			/*
+            wchar_t buf[100];
+            wsprintf(buf, L"%d.%d.%d.%d\n", (*(PLONG)pData >> 0) & 0xff,
+                (*(PLONG)pData >> 8) & 0xff,
+                (*(PLONG)pData >> 16) & 0xff,
+                (*(PLONG)pData >> 24) & 0xff);
+            *pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
+            /*
             wprintf(L"%d.%d.%d.%d\n", (*(PLONG)pData >> 0) & 0xff,
                 (*(PLONG)pData >> 8) & 0xff,
                 (*(PLONG)pData >> 16) & 0xff,
                 (*(PLONG)pData >> 24) & 0xff);
-			*/
+            */
         }
         else
         {
@@ -283,7 +283,7 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
             }
             else
             {
-				*pLocalObject = Integer::NewFromUnsigned(isolate, *(PULONG)pData);
+                *pLocalObject = Integer::NewFromUnsigned(isolate, *(PULONG)pData);
                 //wprintf(L"%lu\n", *(PULONG)pData);
             }
         }
@@ -293,8 +293,8 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
 
     case TDH_INTYPE_INT64:
     {
-		*pLocalObject = Integer::New(isolate, *(PLONGLONG)pData);
-		//wprintf(L"%I64d\n", *(PLONGLONG)pData);
+        *pLocalObject = Integer::New(isolate, *(PLONGLONG)pData);
+        //wprintf(L"%I64d\n", *(PLONGLONG)pData);
 
         break;
     }
@@ -303,11 +303,15 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
     {
         if (TDH_OUTTYPE_HEXINT64 == OutType)
         {
-            wprintf(L"0x%x\n", *(PULONGLONG)pData);
+            wchar_t buf[256];
+            wsprintf(buf, L"0x%x\n", *(PULONGLONG)pData);
+            *pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
+            //wprintf(L"0x%x\n", *(PULONGLONG)pData);
         }
         else
         {
-            wprintf(L"%I64u\n", *(PULONGLONG)pData);
+            *pLocalObject = Integer::NewFromUnsigned(isolate, *(PULONGLONG)pData);
+            //wprintf(L"%I64u\n", *(PULONGLONG)pData);
         }
 
         break;
@@ -315,6 +319,7 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
 
     case TDH_INTYPE_FLOAT:
     {
+        *pLocalObject = Number::New(isolate, *(PFLOAT)pData);
         wprintf(L"%f\n", *(PFLOAT)pData);
 
         break;
@@ -345,7 +350,7 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
 
             if (NULL == fnRtlIpv6AddressToString)
             {
-				status = GetLastError();
+                status = GetLastError();
                 goto cleanup;
             }
 
@@ -424,11 +429,11 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
         }
         else
         {
-			Local<Object> userObj = Object::New(isolate);
-			userObj->Set(String::NewFromUtf8(isolate, "domain"), String::NewFromTwoByte(isolate, (uint16_t*)DomainName));
-			userObj->Set(String::NewFromUtf8(isolate, "user"), String::NewFromTwoByte(isolate, (uint16_t*)UserName));
-			*pLocalObject = userObj;
-			//wprintf(L"%s\\%s\n", DomainName, UserName);
+            Local<Object> userObj = Object::New(isolate);
+            userObj->Set(String::NewFromUtf8(isolate, "domain"), String::NewFromTwoByte(isolate, (uint16_t*)DomainName));
+            userObj->Set(String::NewFromUtf8(isolate, "user"), String::NewFromTwoByte(isolate, (uint16_t*)UserName));
+            *pLocalObject = userObj;
+            //wprintf(L"%s\\%s\n", DomainName, UserName);
         }
 
         break;
@@ -436,33 +441,33 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
 
     case TDH_INTYPE_HEXINT32:
     {
-		wchar_t buf[512];
-		wsprintf(buf, L"0x%x", (PULONG)pData);
-		*pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
+        wchar_t buf[512];
+        wsprintf(buf, L"0x%x", (PULONG)pData);
+        *pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
         //wprintf(L"0x%x\n", (PULONG)pData);
         break;
     }
 
     case TDH_INTYPE_HEXINT64:
     {
-		wchar_t buf[512];
-		wsprintf(buf, L"0x%x", (PULONGLONG)pData);
-		*pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
-		
+        wchar_t buf[512];
+        wsprintf(buf, L"0x%x", (PULONGLONG)pData);
+        *pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)buf);
+        
         //wprintf(L"0x%x\n", (PULONGLONG)pData);
         break;
     }
 
     case TDH_INTYPE_UNICODECHAR:
     {;
-		*pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)pData);
+        *pLocalObject = String::NewFromTwoByte(isolate, (uint16_t*)pData);
         //wprintf(L"%c\n", *(PWCHAR)pData);
         break;
     }
 
     case TDH_INTYPE_ANSICHAR:
     {
-		*pLocalObject = String::NewFromUtf8(isolate, (PCHAR)pData);
+        *pLocalObject = String::NewFromUtf8(isolate, (PCHAR)pData);
         //wprintf(L"%C\n", *(PCHAR)pData);
         break;
     }
@@ -502,12 +507,12 @@ DWORD GetFormattedData(PEVENT_RECORD pEvent, USHORT InType, USHORT OutType, PBYT
             }
             else
             {
-				Handle<Object> userObj = Object::New(isolate);
-				userObj->Set(String::NewFromUtf8(isolate, "domain"), String::NewFromTwoByte(isolate, (uint16_t*)DomainName));
-				Handle<Object> localObj = Object::New(isolate);
-				localObj->Set(String::NewFromUtf8(isolate, "account"), String::NewFromTwoByte(isolate, (uint16_t*)UserName));
-				*pLocalObject = localObj;
-				wprintf(L"%s\\%s\n", DomainName, UserName);
+                Handle<Object> userObj = Object::New(isolate);
+                userObj->Set(String::NewFromUtf8(isolate, "domain"), String::NewFromTwoByte(isolate, (uint16_t*)DomainName));
+                Handle<Object> localObj = Object::New(isolate);
+                localObj->Set(String::NewFromUtf8(isolate, "account"), String::NewFromTwoByte(isolate, (uint16_t*)UserName));
+                *pLocalObject = localObj;
+                wprintf(L"%s\\%s\n", DomainName, UserName);
             }
         }
 
@@ -546,7 +551,7 @@ DWORD GetMapInfo(PEVENT_RECORD pEvent, LPWSTR pMapName, DWORD DecodingSource, PE
         pMapInfo = (PEVENT_MAP_INFO)malloc(mapSize);
         if (pMapInfo == NULL)
         {
-			return ERROR_OUTOFMEMORY;
+            return ERROR_OUTOFMEMORY;
         }
 
         status = TdhGetEventMapInformation(pEvent, pMapName, pMapInfo, &mapSize);
@@ -559,10 +564,10 @@ DWORD GetMapInfo(PEVENT_RECORD pEvent, LPWSTR pMapName, DWORD DecodingSource, PE
             RemoveTrailingSpace(pMapInfo);
         }
     }
-	else if (ERROR_NOT_FOUND == status)
-	{
-		status = ERROR_SUCCESS;
-	}
+    else if (ERROR_NOT_FOUND == status)
+    {
+        status = ERROR_SUCCESS;
+    }
 
     return status;
 }
@@ -602,15 +607,15 @@ DWORD GetEventProperties(PEVENT_RECORD pEvent, PTRACE_EVENT_INFO pInfo, USHORT i
     ULONG DescriptorsCount = 0;
     DWORD PropertySize = 0;
     PBYTE pData = NULL;
-	Isolate* isolate = Isolate::GetCurrent();
-	HandleScope scope(isolate);
+    Isolate* isolate = Isolate::GetCurrent();
+    HandleScope scope(isolate);
 
     status = GetArraySize(pEvent, pInfo, i, &ArraySize);
 
     for (USHORT k = 0; k < ArraySize; k++)
     {
-		LPWSTR propertyName = (LPWSTR)((PBYTE)(pInfo)+pInfo->EventPropertyInfoArray[i].NameOffset);
-		Handle<Value> objName = String::NewFromTwoByte(isolate, (uint16_t*)propertyName);
+        LPWSTR propertyName = (LPWSTR)((PBYTE)(pInfo)+pInfo->EventPropertyInfoArray[i].NameOffset);
+        Handle<Value> objName = String::NewFromTwoByte(isolate, (uint16_t*)propertyName);
         wprintf(L"%*s%s: ", (pStructureName) ? 4 : 0, L"", (LPWSTR)((PBYTE)(pInfo)+pInfo->EventPropertyInfoArray[i].NameOffset));
 
         // If the property is a structure, print the members of the structure
@@ -623,7 +628,7 @@ DWORD GetEventProperties(PEVENT_RECORD pEvent, PTRACE_EVENT_INFO pInfo, USHORT i
 
             for (USHORT j = pInfo->EventPropertyInfoArray[i].structType.StructStartIndex; j < LastMember; j++)
             {
-				Handle<Value> innerObj;
+                Handle<Value> innerObj;
                 status = GetEventProperties(pEvent, pInfo, j, (LPWSTR)((PBYTE)(pInfo)+pInfo->EventPropertyInfoArray[i].NameOffset), k, &innerObj);
                 if (ERROR_SUCCESS != status)
                 {
@@ -685,14 +690,14 @@ DWORD GetEventProperties(PEVENT_RECORD pEvent, PTRACE_EVENT_INFO pInfo, USHORT i
                     goto cleanup;
                 }
 
-				Handle<Value> localFormatted;
+                Handle<Value> localFormatted;
                 status = GetFormattedData(pEvent,
                     pInfo->EventPropertyInfoArray[i].nonStructType.InType,
                     pInfo->EventPropertyInfoArray[i].nonStructType.OutType,
                     pData,
                     PropertySize,
                     pMapInfo,
-					&localFormatted
+                    &localFormatted
                 );
 
                 if (ERROR_SUCCESS != status)
